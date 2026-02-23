@@ -11,7 +11,9 @@ from src.entity.artifact_entity import DataValidationArtifact
 from src.entity.config_entity import DataTransformationConfig
 from src.entity.artifact_entity import DataTransformationArtifact
 from src.components.data_transformation import DataTransformation
-
+from src.entity.config_entity import ModelTrainerConfig
+from src.entity.artifact_entity import ModelTrainerArtifact
+from src.components.model_trainer import ModelTrainer
 
 
 
@@ -21,6 +23,7 @@ class TrainPipeline:
         self.data_ingestion_config = DataIngestionConfig()
         self.data_validation_config = DataValidationConfig()
         self.data_transformation_config = DataTransformationConfig()
+        self.model_trainer_config = ModelTrainerConfig()
 
 
     def start_data_ingestion(self) -> DataIngestionArtifact:
@@ -80,6 +83,20 @@ class TrainPipeline:
 
         except Exception as e:
             raise MyException(e, sys) from e
+
+    def start_model_trainer(self, data_transformation_artifact: DataTransformationArtifact) -> ModelTrainerArtifact:
+        """
+        This method of TrainPipeline class is responsible for starting model training
+        """
+        try:
+            model_trainer = ModelTrainer(data_transformation_artifact=data_transformation_artifact,
+                                         model_trainer_config=self.model_trainer_config
+                                         )
+            model_trainer_artifact = model_trainer.initiate_model_trainer()
+            return model_trainer_artifact
+
+        except Exception as e:
+            raise MyException(e, sys)        
             
 
 
@@ -97,6 +114,10 @@ class TrainPipeline:
             data_transformation_artifact = self.start_data_transformation(data_ingestion_artifact=data_ingestion_artifact,
                                                                          data_validation_artifact=data_validation_artifact)
             logging.info("Data transformation component completed")
+            logging.info("Exited the run_pipeline method of TrainPipeline class")
+            logging.info("Starting the model trainer component")
+            model_trainer_artifact = self.start_model_trainer(data_transformation_artifact=data_transformation_artifact)
+            logging.info("Model trainer component completed")
             logging.info("Exited the run_pipeline method of TrainPipeline class")
         except Exception as e:
             raise MyException(e, sys) from e        
