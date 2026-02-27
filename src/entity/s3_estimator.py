@@ -33,7 +33,7 @@ class Proj1Estimator:
 
     def load_model(self,model_path):
         try:
-            return self.s3.load_model(model_path=model_path,bucket_name=self.bucket_name)
+            return self.s3.load_model(model_name=model_path, bucket_name=self.bucket_name)
         except MyException as e:
             print(e)
             return None
